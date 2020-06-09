@@ -24,8 +24,11 @@ def print_node_data(interested_useragents_percentage):
 
     print_list = "Average version distribution for " + start_date.strftime('%B') + ": "
 
+    intrested_percentage_count = 0
+
     # Process and print dcrd useragents.
     for useragent in interested_useragents_percentage:
+        intrested_percentage_count = useragent[0][2] + intrested_percentage_count
         if "dcrd" in str(useragent[0][0]):
             templist = useragent[0][0].split("/")
             print_list= print_list + str(round(useragent[0][2],2)) + "%  " + templist[2] + ", "
@@ -35,6 +38,10 @@ def print_node_data(interested_useragents_percentage):
         if "dcrwallet" in str(useragent[0][0]):
             templist = useragent[0][0].split("/")
             print_list= print_list +  str(round(useragent[0][2],2)) + "%  " + templist[2] + ", "
+
+    # Print Others
+    print_list = print_list + str(round(100-intrested_percentage_count,2)) + "%  " + "Others."
+
     
     print(print_list)
     print("===========================================================")
@@ -75,14 +82,14 @@ for series in get_data_json['results'][0]['series']:
 
 
 interested_useragents = []
-totalcount_interested = 0
+totalcount = 0
 
-# Filter out only useragents that contain strings form `interested_versions_list` also calulate the sum of all interested nodes into totalcount_interested.
+# Filter out only useragents that contain strings form `interested_versions_list` also calculate the sum of all interested nodes into totalcount.
 for useragent in useragent_avg_list:
     for version in interested_versions_list:
         if str(version) in str(useragent[0]):
             interested_useragents.append(useragent)
-            totalcount_interested = totalcount_interested + useragent[1]
+    totalcount = totalcount + useragent[1]
 
 
 #Sort decending
@@ -93,7 +100,7 @@ interested_useragents_percentage = []
 
 #Calculate and add another column into list. [['useragent','averagenodes','average%'],['useragent2','averagenodes2',average2%]...]
 for intrest in interested_useragent_ordered:
-    percentage = intrest[1]/(totalcount_interested/100)
+    percentage = intrest[1]/(totalcount/100)
     intrest.append(percentage)
     interested_useragents_percentage.append([intrest])
 
