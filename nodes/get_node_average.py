@@ -61,18 +61,6 @@ def print_node_data(interested_useragents_percentage):
     print(print_list)
     print("===========================================================")
 
-filename = sys.argv[1] if len(sys.argv) > 1 else None
-if filename:
-    print("reading from file")
-    with open(filename) as f:
-        get_data_json = json.load(f)
-else:
-    #Get the data as JSON from the API endpoint
-    get_data_json = get_data()
-
-#Uncomment to get raw json
-#print(json.dumps(get_data_json))
-
 def calc_node_version_stats(dcrfarm_data):
 
     useragent_avg_list = []
@@ -114,6 +102,22 @@ def calc_node_version_stats(dcrfarm_data):
 
     return interested_useragents_percentage
 
-stats = calc_node_version_stats(get_data_json)
-#Send data into print_node_data function to output in desired format.
-print_node_data(stats)
+def main():
+    filename = sys.argv[1] if len(sys.argv) > 1 else None
+    if filename:
+        print("reading from file")
+        with open(filename) as f:
+            get_data_json = json.load(f)
+    else:
+        #Get the data as JSON from the API endpoint
+        get_data_json = get_data()
+
+    #Uncomment to get raw json
+    #print(json.dumps(get_data_json))
+
+    stats = calc_node_version_stats(get_data_json)
+    #Send data into print_node_data function to output in desired format.
+    print_node_data(stats)
+
+if __name__ == "__main__":
+    main()
