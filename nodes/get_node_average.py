@@ -3,6 +3,7 @@ import json
 import time
 import datetime
 import operator
+import sys
 
 
 # Send request to API and return json data as json object
@@ -61,8 +62,14 @@ end_date_unix = str(end_date.replace(tzinfo=datetime.timezone.utc).timestamp())[
 # The versions we are intrested in
 interested_versions_list = ["1.4.0","1.5.0","1.5.1","1.6.0"]
 
-#Get the data as JSON from the API endpoint
-get_data_json = get_data()
+filename = sys.argv[1] if len(sys.argv) > 1 else None
+if filename:
+    print("reading from file")
+    with open(filename) as f:
+        get_data_json = json.load(f)
+else:
+    #Get the data as JSON from the API endpoint
+    get_data_json = get_data()
 
 #Uncomment to get raw json
 #print(get_data_json)
