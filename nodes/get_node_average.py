@@ -34,33 +34,6 @@ def get_data():
         print("Check Connection")
         exit
 
-def print_node_data(interested_useragents_percentage):
-    print("===========================================================")
-
-    print_list = "Average version distribution for " + start_date.strftime('%B') + ": "
-
-    intrested_percentage_count = 0
-
-    # Process and print dcrd useragents.
-    for useragent in interested_useragents_percentage:
-        intrested_percentage_count = useragent[0][2] + intrested_percentage_count
-        if "dcrd" in str(useragent[0][0]):
-            templist = useragent[0][0].split("/")
-            print_list= print_list + str(round(useragent[0][2],2)) + "%  " + templist[2] + ", "
-
-    # Process and print dcrwallet useragents. 
-    for useragent in interested_useragents_percentage:
-        if "dcrwallet" in str(useragent[0][0]):
-            templist = useragent[0][0].split("/")
-            print_list= print_list +  str(round(useragent[0][2],2)) + "%  " + templist[2] + ", "
-
-    # Print Others
-    print_list = print_list + str(round(100-intrested_percentage_count,2)) + "%  " + "Others."
-
-    
-    print(print_list)
-    print("===========================================================")
-
 def calc_node_version_stats(dcrfarm_data):
 
     useragent_avg_list = []
@@ -101,6 +74,33 @@ def calc_node_version_stats(dcrfarm_data):
         interested_useragents_percentage.append([intrest])
 
     return interested_useragents_percentage
+
+def print_node_data(interested_useragents_percentage):
+    print("===========================================================")
+
+    print_list = "Average version distribution for " + start_date.strftime('%B') + ": "
+
+    intrested_percentage_count = 0
+
+    # Process and print dcrd useragents.
+    for useragent in interested_useragents_percentage:
+        intrested_percentage_count = useragent[0][2] + intrested_percentage_count
+        if "dcrd" in str(useragent[0][0]):
+            templist = useragent[0][0].split("/")
+            print_list= print_list + str(round(useragent[0][2],2)) + "%  " + templist[2] + ", "
+
+    # Process and print dcrwallet useragents. 
+    for useragent in interested_useragents_percentage:
+        if "dcrwallet" in str(useragent[0][0]):
+            templist = useragent[0][0].split("/")
+            print_list= print_list +  str(round(useragent[0][2],2)) + "%  " + templist[2] + ", "
+
+    # Print Others
+    print_list = print_list + str(round(100-intrested_percentage_count,2)) + "%  " + "Others."
+
+    
+    print(print_list)
+    print("===========================================================")
 
 def main():
     filename = sys.argv[1] if len(sys.argv) > 1 else None
