@@ -8,15 +8,11 @@ import sys
 #API endpoint
 apipoint = "https://charts.dcr.farm/api/datasources/proxy/1/query?db=decred&"
 
-#Change these dates for your range
-start_date = datetime.datetime(2020,5,1,0,0,0,0)
-end_date = datetime.datetime(2020,5,31,23,59,59,0)
-
 # The versions we are intrested in
 interested_versions_list = ["1.4.0","1.5.0","1.5.1","1.6.0"]
 
 # Send request to API and return json data as json object
-def get_dcrfarm_data():
+def get_dcrfarm_data(start_date, end_date):
 
     #Convert datetime to unix time format as required by the api
     start_date_unix = str(start_date.replace(tzinfo=datetime.timezone.utc).timestamp())[:-2]+"000"
@@ -75,7 +71,7 @@ def calc_node_version_stats(dcrfarm_data):
 
     return interested_useragents_percentage
 
-def print_node_stats(interested_useragents_percentage):
+def print_node_stats(interested_useragents_percentage, start_date):
     print("===========================================================")
 
     print_list = "Average version distribution for " + start_date.strftime('%B') + ": "
@@ -103,6 +99,10 @@ def print_node_stats(interested_useragents_percentage):
     print("===========================================================")
 
 def main():
+    #Change these dates for your range
+    start_date = datetime.datetime(2020,5,1,0,0,0,0)
+    end_date = datetime.datetime(2020,5,31,23,59,59,0)
+
     filename = sys.argv[1] if len(sys.argv) > 1 else None
     if filename:
         print("reading from file")
@@ -110,14 +110,14 @@ def main():
             dcrfarm_data = json.load(f)
     else:
         #Get the data as JSON from the API endpoint
-        dcrfarm_data = get_dcrfarm_data()
+        dcrfarm_data = get_dcrfarm_data(start_date, end_date)
 
     #Uncomment to get raw json
     #print(json.dumps(dcrfarm_data))
 
     stats = calc_node_version_stats(dcrfarm_data)
     #Send data into print_node_stats function to output in desired format.
-    print_node_stats(stats)
+    print_node_stats(stats, start_date)
 
 if __name__ == "__main__":
     main()
