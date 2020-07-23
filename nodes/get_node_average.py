@@ -72,7 +72,7 @@ else:
     get_data_json = get_data()
 
 #Uncomment to get raw json
-#print(get_data_json)
+#print(json.dumps(get_data_json))
 
 useragent_avg_list = []
 
