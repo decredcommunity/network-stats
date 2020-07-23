@@ -20,14 +20,14 @@ def datetime_to_unix_millis(dt):
 def get_dcrfarm_data(start_date, end_date):
 
     #Convert datetime to unix time format as required by the api
-    start_date_unix = datetime_to_unix_millis(start_date)
-    end_date_unix = datetime_to_unix_millis(end_date)
+    start_unix_ms = datetime_to_unix_millis(start_date)
+    end_unix_ms = datetime_to_unix_millis(end_date)
 
     url = ('https://charts.dcr.farm/api/datasources/proxy/1/query?db=decred&q='
            'SELECT count(distinct("addr")) FROM "peers"'
            ' WHERE time >= {start_ms}ms and time <= {end_ms}ms'
            ' GROUP BY time(1d), "useragent_tag" fill(none)'
-          ).format(start_ms=start_date_unix, end_ms=end_date_unix)
+          ).format(start_ms=start_unix_ms, end_ms=end_unix_ms)
 
     print("===========================================================")
     print("Getting data from " + url)
