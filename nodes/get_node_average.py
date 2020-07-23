@@ -23,7 +23,11 @@ def get_dcrfarm_data(start_date, end_date):
     start_date_unix = datetime_to_unix_millis(start_date)
     end_date_unix = datetime_to_unix_millis(end_date)
 
-    url = 'https://charts.dcr.farm/api/datasources/proxy/1/query?db=decred&q=SELECT count(distinct("addr")) FROM "peers" WHERE time >= {}ms and time <= {}ms GROUP BY time(1d), "useragent_tag" fill(none)'.format(start_date_unix, end_date_unix)
+    url = ('https://charts.dcr.farm/api/datasources/proxy/1/query?db=decred&q='
+           'SELECT count(distinct("addr")) FROM "peers"'
+           ' WHERE time >= {start_ms}ms and time <= {end_ms}ms'
+           ' GROUP BY time(1d), "useragent_tag" fill(none)'
+          ).format(start_ms=start_date_unix, end_ms=end_date_unix)
 
     print("===========================================================")
     print("Getting data from " + url)
