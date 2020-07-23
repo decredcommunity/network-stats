@@ -73,42 +73,47 @@ else:
 #Uncomment to get raw json
 #print(json.dumps(get_data_json))
 
-useragent_avg_list = []
+def calc_node_version_stats(dcrfarm_data):
 
-#Process json into list of format [['useragent','averagenodes'],['useragent2','averagenodes2']...]
-for series in get_data_json['results'][0]['series']:
-    total = 0
-    count = 0
-    data_useragent = series['tags']['useragent_tag']
-    for data_point in series['values']:
-        total = total + data_point[1]
-        count = count+1
-    average=total/count
-    useragent_avg_list.append([data_useragent,average])
+    useragent_avg_list = []
 
-
-interested_useragents = []
-totalcount = 0
-
-# Filter out only useragents that contain strings form `interested_versions_list` also calculate the sum of all interested nodes into totalcount.
-for useragent in useragent_avg_list:
-    for version in interested_versions_list:
-        if str(version) in str(useragent[0]):
-            interested_useragents.append(useragent)
-    totalcount = totalcount + useragent[1]
+    #Process json into list of format [['useragent','averagenodes'],['useragent2','averagenodes2']...]
+    for series in dcrfarm_data['results'][0]['series']:
+        total = 0
+        count = 0
+        data_useragent = series['tags']['useragent_tag']
+        for data_point in series['values']:
+            total = total + data_point[1]
+            count = count+1
+        average=total/count
+        useragent_avg_list.append([data_useragent,average])
 
 
-#Sort decending
-interested_useragent_ordered = sorted(interested_useragents, key=operator.itemgetter(1), reverse=True)
+    interested_useragents = []
+    totalcount = 0
+
+    # Filter out only useragents that contain strings form `interested_versions_list` also calculate the sum of all interested nodes into totalcount.
+    for useragent in useragent_avg_list:
+        for version in interested_versions_list:
+            if str(version) in str(useragent[0]):
+                interested_useragents.append(useragent)
+        totalcount = totalcount + useragent[1]
 
 
-interested_useragents_percentage = []
+    #Sort decending
+    interested_useragent_ordered = sorted(interested_useragents, key=operator.itemgetter(1), reverse=True)
 
-#Calculate and add another column into list. [['useragent','averagenodes','average%'],['useragent2','averagenodes2',average2%]...]
-for intrest in interested_useragent_ordered:
-    percentage = intrest[1]/(totalcount/100)
-    intrest.append(percentage)
-    interested_useragents_percentage.append([intrest])
 
+    interested_useragents_percentage = []
+
+    #Calculate and add another column into list. [['useragent','averagenodes','average%'],['useragent2','averagenodes2',average2%]...]
+    for intrest in interested_useragent_ordered:
+        percentage = intrest[1]/(totalcount/100)
+        intrest.append(percentage)
+        interested_useragents_percentage.append([intrest])
+
+    return interested_useragents_percentage
+
+stats = calc_node_version_stats(get_data_json)
 #Send data into print_node_data function to output in desired format.
-print_node_data(interested_useragents_percentage)
+print_node_data(stats)
