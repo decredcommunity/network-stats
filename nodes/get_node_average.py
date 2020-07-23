@@ -43,12 +43,12 @@ def calc_node_version_stats(dcrfarm_data):
 
     useragent_avg_list = []
 
-    #Process json into list of format [['useragent','averagenodes'],['useragent2','averagenodes2']...]
-    for series in dcrfarm_data['results'][0]['series']:
+    #Process json into list of format [["useragent","averagenodes"],["useragent2","averagenodes2"]...]
+    for series in dcrfarm_data["results"][0]["series"]:
         total = 0
         count = 0
-        data_useragent = series['tags']['useragent_tag']
-        for data_point in series['values']:
+        data_useragent = series["tags"]["useragent_tag"]
+        for data_point in series["values"]:
             total = total + data_point[1]
             count = count + 1
         average = total / count
@@ -72,7 +72,7 @@ def calc_node_version_stats(dcrfarm_data):
 
     interested_useragents_percentage = []
 
-    #Calculate and add another column into list. [['useragent','averagenodes','average%'],['useragent2','averagenodes2',average2%]...]
+    #Calculate and add another column into list. [["useragent","averagenodes","average%"],["useragent2","averagenodes2",average2%]...]
     for intrest in interested_useragent_ordered:
         percentage = intrest[1] / (totalcount / 100)
         intrest.append(percentage)
@@ -83,7 +83,7 @@ def calc_node_version_stats(dcrfarm_data):
 def print_node_stats(interested_useragents_percentage, start_date):
     print("===========================================================")
 
-    print_list = "Average version distribution for " + start_date.strftime('%B') + ": "
+    print_list = "Average version distribution for " + start_date.strftime("%B") + ": "
 
     intrested_percentage_count = 0
 
