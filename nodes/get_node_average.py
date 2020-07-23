@@ -16,7 +16,7 @@ end_date = datetime.datetime(2020,5,31,23,59,59,0)
 interested_versions_list = ["1.4.0","1.5.0","1.5.1","1.6.0"]
 
 # Send request to API and return json data as json object
-def get_data():
+def get_dcrfarm_data():
 
     #Convert datetime to unix time format as required by the api
     start_date_unix = str(start_date.replace(tzinfo=datetime.timezone.utc).timestamp())[:-2]+"000"
@@ -75,7 +75,7 @@ def calc_node_version_stats(dcrfarm_data):
 
     return interested_useragents_percentage
 
-def print_node_data(interested_useragents_percentage):
+def print_node_stats(interested_useragents_percentage):
     print("===========================================================")
 
     print_list = "Average version distribution for " + start_date.strftime('%B') + ": "
@@ -107,17 +107,17 @@ def main():
     if filename:
         print("reading from file")
         with open(filename) as f:
-            get_data_json = json.load(f)
+            dcrfarm_data = json.load(f)
     else:
         #Get the data as JSON from the API endpoint
-        get_data_json = get_data()
+        dcrfarm_data = get_dcrfarm_data()
 
     #Uncomment to get raw json
-    #print(json.dumps(get_data_json))
+    #print(json.dumps(dcrfarm_data))
 
-    stats = calc_node_version_stats(get_data_json)
-    #Send data into print_node_data function to output in desired format.
-    print_node_data(stats)
+    stats = calc_node_version_stats(dcrfarm_data)
+    #Send data into print_node_stats function to output in desired format.
+    print_node_stats(stats)
 
 if __name__ == "__main__":
     main()
