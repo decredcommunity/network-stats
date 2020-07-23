@@ -37,8 +37,7 @@ def get_dcrfarm_data(start_date, end_date):
         response_json = json.loads(response.text)
         return response_json
     else:
-        print("Check Connection")
-        exit
+        raise Exception("unexpected response from charts.dcr.farm: HTTP status is " + str(response.status_code))
 
 def calc_node_version_stats(dcrfarm_data):
 
@@ -130,4 +129,8 @@ def main():
     print_node_stats(stats, start_date)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print("error: " + str(e))
+        sys.exit(1)
