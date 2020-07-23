@@ -5,9 +5,6 @@ import datetime
 import operator
 import sys
 
-#API endpoint
-apipoint = "https://charts.dcr.farm/api/datasources/proxy/1/query?db=decred&"
-
 # The versions we are intrested in
 interested_versions_list = ["1.4.0","1.5.0","1.5.1","1.6.0"]
 
@@ -18,7 +15,11 @@ def get_dcrfarm_data(start_date, end_date):
     start_date_unix = str(start_date.replace(tzinfo=datetime.timezone.utc).timestamp())[:-2]+"000"
     end_date_unix = str(end_date.replace(tzinfo=datetime.timezone.utc).timestamp())[:-2]+"000"
 
+    #API endpoint
+    apipoint = "https://charts.dcr.farm/api/datasources/proxy/1/query?db=decred&"
+
     url = apipoint+'q=SELECT count(distinct("addr")) FROM "peers" WHERE time >= '+start_date_unix+ 'ms and time <= '+end_date_unix+'ms GROUP BY time(1d), "useragent_tag" fill(none)'
+
     print("===========================================================")
     print("Getting data from " + url)
     print("===========================================================")
