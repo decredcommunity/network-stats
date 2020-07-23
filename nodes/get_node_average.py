@@ -8,18 +8,20 @@ import sys
 # The versions we are intrested in
 interested_versions_list = ["1.4.0","1.5.0","1.5.1","1.6.0"]
 
+def datetime_to_unix_millis(dt):
+    # require an aware UTC date so that there is no room for error when calling
+    # datetime.datetime.timestamp(), which might return an incorrect Unix
+    # timestamp if the system timezone is not UTC
+    assert dt.tzinfo == datetime.timezone.utc
+
+    return int(dt.timestamp()) * 1000
+
 # Send request to API and return json data as json object
 def get_dcrfarm_data(start_date, end_date):
 
-    # require aware UTC dates so that there is no room for error when calling
-    # datetime.datetime.timestamp(), which might return an incorrect Unix
-    # timestamp if the system clock is not UTC
-    assert start_date.tzinfo == datetime.timezone.utc
-    assert end_date.tzinfo == datetime.timezone.utc
-
     #Convert datetime to unix time format as required by the api
-    start_date_unix = str(start_date.timestamp())[:-2]+"000"
-    end_date_unix = str(end_date.timestamp())[:-2]+"000"
+    start_date_unix = datetime_to_unix_millis(start_date)
+    end_date_unix = datetime_to_unix_millis(end_date)
 
     #API endpoint
     apipoint = "https://charts.dcr.farm/api/datasources/proxy/1/query?db=decred&"
