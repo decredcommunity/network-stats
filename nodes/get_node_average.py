@@ -11,9 +11,15 @@ interested_versions_list = ["1.4.0","1.5.0","1.5.1","1.6.0"]
 # Send request to API and return json data as json object
 def get_dcrfarm_data(start_date, end_date):
 
+    # require aware UTC dates so that there is no room for error when calling
+    # datetime.datetime.timestamp(), which might return an incorrect Unix
+    # timestamp if the system clock is not UTC
+    assert start_date.tzinfo == datetime.timezone.utc
+    assert end_date.tzinfo == datetime.timezone.utc
+
     #Convert datetime to unix time format as required by the api
-    start_date_unix = str(start_date.replace(tzinfo=datetime.timezone.utc).timestamp())[:-2]+"000"
-    end_date_unix = str(end_date.replace(tzinfo=datetime.timezone.utc).timestamp())[:-2]+"000"
+    start_date_unix = str(start_date.timestamp())[:-2]+"000"
+    end_date_unix = str(end_date.timestamp())[:-2]+"000"
 
     #API endpoint
     apipoint = "https://charts.dcr.farm/api/datasources/proxy/1/query?db=decred&"
@@ -101,8 +107,8 @@ def print_node_stats(interested_useragents_percentage, start_date):
 
 def main():
     #Change these dates for your range
-    start_date = datetime.datetime(2020,5,1,0,0,0,0)
-    end_date = datetime.datetime(2020,5,31,23,59,59,0)
+    start_date = datetime.datetime(2020,5,1,0,0,0,0, tzinfo=datetime.timezone.utc)
+    end_date = datetime.datetime(2020,5,31,23,59,59,0, tzinfo=datetime.timezone.utc)
 
     filename = sys.argv[1] if len(sys.argv) > 1 else None
     if filename:
