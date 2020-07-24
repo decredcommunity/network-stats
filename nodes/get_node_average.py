@@ -3,6 +3,7 @@ import json
 import time
 import datetime
 import operator
+import statistics
 import sys
 
 # The versions we are intrested in
@@ -45,15 +46,9 @@ def calc_node_version_stats(dcrfarm_data):
 
     #Process json into list of format [["useragent","averagenodes"],["useragent2","averagenodes2"]...]
     for series in dcrfarm_data["results"][0]["series"]:
-        total = 0
-        count = 0
         data_useragent = series["tags"]["useragent_tag"]
-        for data_point in series["values"]:
-            total += data_point[1]
-            count += 1
-        average = total / count
-        useragent_avg_list.append([data_useragent, average])
-
+        mean = statistics.mean(map(operator.itemgetter(1), series["values"]))
+        useragent_avg_list.append([data_useragent, mean])
 
     interested_useragents = []
     totalcount = 0
