@@ -53,13 +53,13 @@ def calc_node_version_stats(dcrfarm_data):
     interested_useragents = []
     totalcount = 0
 
-    # Filter out only useragents that contain strings form `interested_versions_list` also calculate the sum of all interested nodes into totalcount.
-    for useragent in useragent_avg_list:
+    # Filter out only useragents that contain strings from `interested_versions_list` also calculate the sum of all nodes into totalcount.
+    for ua_mean in useragent_avg_list:
+        ua, mean = ua_mean
         for version in interested_versions_list:
-            if str(version) in str(useragent[0]):
-                interested_useragents.append(useragent)
-        totalcount += useragent[1]
-
+            if str(version) in str(ua):
+                interested_useragents.append(ua_mean)
+        totalcount += mean
 
     #Sort decending
     interested_useragent_ordered = sorted(interested_useragents, key=operator.itemgetter(1), reverse=True)
