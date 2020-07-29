@@ -78,6 +78,7 @@ def calc_node_version_stats(dcrfarm_data):
         for version in tracked_versions:
             if str(version) in str(ua):
                 tracked_ua_means.append(ua_mean)
+                break
         mean_sum += mean
 
     # sort descending
