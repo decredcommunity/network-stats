@@ -80,16 +80,16 @@ def print_node_stats(interested_useragents_percentage, start_date):
     intrested_percentage_count = 0
 
     # Process and print useragents.
-    for useragent in interested_useragents_percentage:
-        intrested_percentage_count += useragent[2]
+    for ua, avg, avgpc in interested_useragents_percentage:
+        intrested_percentage_count += avgpc
 
-        if "dcrd" in str(useragent[0]):
-            templist = useragent[0].split("/")
-            dcrd_str += str(round(useragent[2], 2)) + "%  " + templist[2] + ", "
+        if "dcrd" in str(ua):
+            templist = ua.split("/")
+            dcrd_str += str(round(avgpc, 2)) + "%  " + templist[2] + ", "
 
-        if "dcrwallet" in str(useragent[0]):
-            templist = useragent[0].split("/")
-            dcrwallet_str +=  str(round(useragent[2], 2)) + "%  " + templist[2] + ", "
+        if "dcrwallet" in str(ua):
+            templist = ua.split("/")
+            dcrwallet_str +=  str(round(avgpc, 2)) + "%  " + templist[2] + ", "
 
     # Print Others
     print_list += dcrd_str + dcrwallet_str + str(round(100-intrested_percentage_count,2)) + "% Others."
