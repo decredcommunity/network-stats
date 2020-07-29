@@ -75,7 +75,8 @@ def print_node_stats(interested_useragents_percentage, start_date):
     print("===========================================================")
 
     print_list = "Average version distribution for " + start_date.strftime("%B") + ": "
-
+    dcrd_str = ""
+    dcrwallet_str = ""
     intrested_percentage_count = 0
 
     # Process and print dcrd useragents.
@@ -83,16 +84,16 @@ def print_node_stats(interested_useragents_percentage, start_date):
         intrested_percentage_count += useragent[2]
         if "dcrd" in str(useragent[0]):
             templist = useragent[0].split("/")
-            print_list += str(round(useragent[2], 2)) + "%  " + templist[2] + ", "
+            dcrd_str += str(round(useragent[2], 2)) + "%  " + templist[2] + ", "
 
     # Process and print dcrwallet useragents. 
     for useragent in interested_useragents_percentage:
         if "dcrwallet" in str(useragent[0]):
             templist = useragent[0].split("/")
-            print_list +=  str(round(useragent[2], 2)) + "%  " + templist[2] + ", "
+            dcrwallet_str +=  str(round(useragent[2], 2)) + "%  " + templist[2] + ", "
 
     # Print Others
-    print_list += str(round(100-intrested_percentage_count,2)) + "%  " + "Others."
+    print_list += dcrd_str + dcrwallet_str + str(round(100-intrested_percentage_count,2)) + "% Others."
 
     
     print(print_list)
