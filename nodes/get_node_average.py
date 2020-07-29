@@ -64,16 +64,12 @@ def calc_node_version_stats(dcrfarm_data):
     #Sort decending
     interested_useragent_ordered = sorted(interested_useragents, key=operator.itemgetter(1), reverse=True)
 
-
-    interested_useragents_percentage = []
-
     #Calculate and add another column into list. [["useragent","averagenodes","average%"],["useragent2","averagenodes2",average2%]...]
     for intrest in interested_useragent_ordered:
         percentage = intrest[1] / (totalcount / 100)
         intrest.append(percentage)
-        interested_useragents_percentage.append([intrest])
 
-    return interested_useragents_percentage
+    return interested_useragent_ordered
 
 def print_node_stats(interested_useragents_percentage, start_date):
     print("===========================================================")
@@ -84,16 +80,16 @@ def print_node_stats(interested_useragents_percentage, start_date):
 
     # Process and print dcrd useragents.
     for useragent in interested_useragents_percentage:
-        intrested_percentage_count += useragent[0][2]
-        if "dcrd" in str(useragent[0][0]):
-            templist = useragent[0][0].split("/")
-            print_list += str(round(useragent[0][2], 2)) + "%  " + templist[2] + ", "
+        intrested_percentage_count += useragent[2]
+        if "dcrd" in str(useragent[0]):
+            templist = useragent[0].split("/")
+            print_list += str(round(useragent[2], 2)) + "%  " + templist[2] + ", "
 
     # Process and print dcrwallet useragents. 
     for useragent in interested_useragents_percentage:
-        if "dcrwallet" in str(useragent[0][0]):
-            templist = useragent[0][0].split("/")
-            print_list +=  str(round(useragent[0][2], 2)) + "%  " + templist[2] + ", "
+        if "dcrwallet" in str(useragent[0]):
+            templist = useragent[0].split("/")
+            print_list +=  str(round(useragent[2], 2)) + "%  " + templist[2] + ", "
 
     # Print Others
     print_list += str(round(100-intrested_percentage_count,2)) + "%  " + "Others."
