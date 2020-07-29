@@ -30,9 +30,7 @@ def get_dcrfarm_data(start_date, end_date):
            ' GROUP BY time(1d), "useragent_tag" fill(none)'
           ).format(start_ms=start_unix_ms, end_ms=end_unix_ms)
 
-    print("===========================================================")
-    print("Getting data from " + url)
-    print("===========================================================")
+    print("fetching " + url)
     response = requests.get(url)
     if response.status_code == 200:
         response_json = json.loads(response.text)
@@ -72,8 +70,6 @@ def calc_node_version_stats(dcrfarm_data):
     return interested_useragent_ordered
 
 def print_node_stats(interested_useragents_percentage, start_date):
-    print("===========================================================")
-
     print_list = "Average version distribution for " + start_date.strftime("%B") + ": "
     dcrd_str = ""
     dcrwallet_str = ""
@@ -85,18 +81,16 @@ def print_node_stats(interested_useragents_percentage, start_date):
 
         if "dcrd" in str(ua):
             templist = ua.split("/")
-            dcrd_str += str(round(avgpc, 2)) + "%  " + templist[2] + ", "
+            dcrd_str += str(round(avgpc, 2)) + "% " + templist[2] + ", "
 
         if "dcrwallet" in str(ua):
             templist = ua.split("/")
-            dcrwallet_str +=  str(round(avgpc, 2)) + "%  " + templist[2] + ", "
+            dcrwallet_str += str(round(avgpc, 2)) + "% " + templist[2] + ", "
 
     # Print Others
     print_list += dcrd_str + dcrwallet_str + str(round(100-intrested_percentage_count,2)) + "% Others."
 
-    
     print(print_list)
-    print("===========================================================")
 
 def main():
     #Change these dates for your range
