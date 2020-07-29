@@ -5,9 +5,16 @@ import datetime
 import operator
 import statistics
 import sys
+from collections import namedtuple
 
 # the versions we are intrested in
 tracked_versions = ["1.4.0", "1.5.0", "1.5.1", "1.6.0"]
+
+UserAgent = namedtuple("UserAgent", [
+    "wire_name",
+    "wire_version",
+    "name",
+    "version"])
 
 def datetime_to_unix_millis(dt):
     # require an aware UTC date so that there is no room for error when calling
@@ -16,6 +23,19 @@ def datetime_to_unix_millis(dt):
     assert dt.tzinfo == datetime.timezone.utc
 
     return int(dt.timestamp()) * 1000
+
+def parse_user_agent(s):
+    # ad-hoc parsing of a subset of BIP-14
+    # https://github.com/bitcoin/bips/blob/master/bip-0014.mediawiki
+    _, wire, app, _ = s.split("/")
+    wire_name, wire_version = wire.split(":")
+    app_name, app_version = app.split(":")
+    return UserAgent(
+        wire_name = wire_name,
+        wire_version = wire_version,
+        name = app_name,
+        version = app_version
+    )
 
 # send request to dcr.farm API and return JSON data as a Python object
 def get_dcrfarm_data(start_date, end_date):
@@ -79,16 +99,16 @@ def print_node_stats(stats, start_date):
     tracked_percentage = 0
 
     # process and collect useragents strings
-    for ua, avg, avgpc in stats:
+    for uastr, avg, avgpc in stats:
         tracked_percentage += avgpc
 
-        if "dcrd" in str(ua):
-            ua_parts = ua.split("/")
-            dcrd_str += str(round(avgpc, 2)) + "% " + ua_parts[2] + ", "
+        if "dcrd" in str(uastr):
+            ua = parse_user_agent(uastr)
+            dcrd_str += str(round(avgpc, 2)) + "% " + ua.name + " v" + ua.version + ", "
 
-        if "dcrwallet" in str(ua):
-            ua_parts = ua.split("/")
-            dcrwallet_str += str(round(avgpc, 2)) + "% " + ua_parts[2] + ", "
+        if "dcrwallet" in str(uastr):
+            ua = parse_user_agent(uastr)
+            dcrwallet_str += str(round(avgpc, 2)) + "% " + ua.name + " v" + ua.version + ", "
 
     # build and print the final string
     output += dcrd_str + dcrwallet_str + str(round(100-tracked_percentage,2)) + "% Others."
