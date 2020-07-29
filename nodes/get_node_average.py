@@ -7,7 +7,7 @@ import statistics
 import sys
 
 # the versions we are intrested in
-interested_versions_list = ["1.4.0", "1.5.0", "1.5.1", "1.6.0"]
+tracked_versions = ["1.4.0", "1.5.0", "1.5.1", "1.6.0"]
 
 def datetime_to_unix_millis(dt):
     # require an aware UTC date so that there is no room for error when calling
@@ -31,68 +31,68 @@ def get_dcrfarm_data(start_date, end_date):
           ).format(start_ms=start_unix_ms, end_ms=end_unix_ms)
 
     print("fetching " + url)
-    response = requests.get(url)
-    if response.status_code == 200:
-        response_json = json.loads(response.text)
-        return response_json
+    resp = requests.get(url)
+    if resp.status_code == 200:
+        return json.loads(resp.text)
     else:
-        raise Exception("unexpected response from charts.dcr.farm: HTTP status is " + str(response.status_code))
+        raise Exception("unexpected response from charts.dcr.farm: HTTP status is " + str(resp.status_code))
 
 def calc_node_version_stats(dcrfarm_data):
 
-    useragent_avg_list = []
+    useragent_means = []
 
     # convert data to structure like:
     # [["useragent1", "averagenodes1"], ["useragent2", "averagenodes2"], ...]
     for series in dcrfarm_data["results"][0]["series"]:
-        data_useragent = series["tags"]["useragent_tag"]
+        ua = series["tags"]["useragent_tag"]
         mean = statistics.mean(map(operator.itemgetter(1), series["values"]))
-        useragent_avg_list.append([data_useragent, mean])
+        useragent_means.append([ua, mean])
 
-    interested_useragents = []
-    totalcount = 0
+    tracked_ua_means = []
+    mean_sum = 0
 
-    # filter out only useragents that contain strings from `interested_versions_list`
-    # also calculate the sum of all nodes into totalcount
-    for ua_mean in useragent_avg_list:
+    # filter out only useragents that contain strings from `tracked_versions`
+    # also calculate the sum of all nodes into mean_sum
+    for ua_mean in useragent_means:
         ua, mean = ua_mean
-        for version in interested_versions_list:
+        for version in tracked_versions:
             if str(version) in str(ua):
-                interested_useragents.append(ua_mean)
-        totalcount += mean
+                tracked_ua_means.append(ua_mean)
+        mean_sum += mean
 
     # sort descending
-    interested_useragent_ordered = sorted(interested_useragents, key=operator.itemgetter(1), reverse=True)
+    stats = sorted(tracked_ua_means, key=operator.itemgetter(1), reverse=True)
 
     # calculate percentages among total nodes and add them as a new column
     # [["useragent1", "averagenodes1", "average1%"], ...]
-    for intrest in interested_useragent_ordered:
-        percentage = intrest[1] / (totalcount / 100)
-        intrest.append(percentage)
+    for ua_mean in stats:
+        ua, mean = ua_mean
+        percentage = mean / (mean_sum / 100)
+        ua_mean.append(percentage)
 
-    return interested_useragent_ordered
+    return stats
 
-def print_node_stats(interested_useragents_percentage, start_date):
-    print_list = "Average version distribution for " + start_date.strftime("%B") + ": "
+def print_node_stats(stats, start_date):
+    output = "Average version distribution for " + start_date.strftime("%B") + ": "
     dcrd_str = ""
     dcrwallet_str = ""
-    intrested_percentage_count = 0
+    tracked_percentage = 0
 
     # process and collect useragents strings
-    for ua, avg, avgpc in interested_useragents_percentage:
-        intrested_percentage_count += avgpc
+    for ua, avg, avgpc in stats:
+        tracked_percentage += avgpc
 
         if "dcrd" in str(ua):
-            templist = ua.split("/")
-            dcrd_str += str(round(avgpc, 2)) + "% " + templist[2] + ", "
+            ua_parts = ua.split("/")
+            dcrd_str += str(round(avgpc, 2)) + "% " + ua_parts[2] + ", "
 
         if "dcrwallet" in str(ua):
-            templist = ua.split("/")
-            dcrwallet_str += str(round(avgpc, 2)) + "% " + templist[2] + ", "
+            ua_parts = ua.split("/")
+            dcrwallet_str += str(round(avgpc, 2)) + "% " + ua_parts[2] + ", "
 
     # build and print the final string
-    print_list += dcrd_str + dcrwallet_str + str(round(100-intrested_percentage_count,2)) + "% Others."
-    print(print_list)
+    output += dcrd_str + dcrwallet_str + str(round(100-tracked_percentage,2)) + "% Others."
+    print(output)
 
 def main():
     # change these dates for your time period
