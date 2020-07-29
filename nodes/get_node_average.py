@@ -7,14 +7,40 @@ import statistics
 import sys
 from collections import namedtuple
 
-# the versions we are intrested in
-tracked_versions = ["1.4.0", "1.5.0", "1.5.1", "1.6.0"]
-
-UserAgent = namedtuple("UserAgent", [
-    "wire_name",
-    "wire_version",
+GroupStats = namedtuple("GroupStats", [
     "name",
-    "version"])
+    "avg_nodes",
+    "avg_nodes_ratio",
+    "stats"
+])
+
+TRACKED_UA_GROUPS = {
+    "dcrd v1.5.1":          ["/dcrwire:0.4.0/dcrd:1.5.1/"],
+    "dcrd v1.5":            ["/dcrwire:0.4.0/dcrd:1.5.0/"],
+    "dcrd v1.6 dev builds": ["/dcrwire:0.4.0/dcrd:1.6.0(pre)/"],
+    "dcrd v1.5 dev and RC builds": [
+        "/dcrwire:0.3.0/dcrd:1.5.0(pre)/",
+        "/dcrwire:0.4.0/dcrd:1.5.0(pre)/",
+        "/dcrwire:0.4.0/dcrd:1.5.0(rc1)/",
+        "/dcrwire:0.4.0/dcrd:1.5.0(rc2)/",
+    ],
+    "dcrd v1.4":            ["/dcrwire:0.3.0/dcrd:1.4.0/"],
+    "dcrwallet v1.5.1":     ["/dcrwire:0.4.0/dcrwallet:1.5.1+release/"],
+    "dcrwallet v1.5":       ["/dcrwire:0.4.0/dcrwallet:1.5.0+release/"],
+    "dcrwallet v1.4":       ["/dcrwire:0.3.0/dcrwallet:1.4.0+release/"],
+}
+
+def inverse_multidict(md):
+    # compute an inverse multidict
+    # multidict is a dict that maps keys to lists of elements
+    # NOTE: there must be no duplicate elements across all lists!
+    inverse = {}
+    for k, v in md.items():
+        for e in v:
+            if e in inverse:
+                raise Exception("duplicate elements in multidict values are not allowed")
+            inverse[e] = k
+    return inverse
 
 def datetime_to_unix_millis(dt):
     # require an aware UTC date so that there is no room for error when calling
@@ -23,19 +49,6 @@ def datetime_to_unix_millis(dt):
     assert dt.tzinfo == datetime.timezone.utc
 
     return int(dt.timestamp()) * 1000
-
-def parse_user_agent(s):
-    # ad-hoc parsing of a subset of BIP-14
-    # https://github.com/bitcoin/bips/blob/master/bip-0014.mediawiki
-    _, wire, app, _ = s.split("/")
-    wire_name, wire_version = wire.split(":")
-    app_name, app_version = app.split(":")
-    return UserAgent(
-        wire_name = wire_name,
-        wire_version = wire_version,
-        name = app_name,
-        version = app_version
-    )
 
 # send request to dcr.farm API and return JSON data as a Python object
 def get_dcrfarm_data(start_date, end_date):
@@ -58,61 +71,69 @@ def get_dcrfarm_data(start_date, end_date):
         raise Exception("unexpected response from charts.dcr.farm: HTTP status is " + str(resp.status_code))
 
 def calc_node_version_stats(dcrfarm_data):
+    ua_stats = []
+    mean_sum = 0
+    get_count = operator.itemgetter(1)
 
-    useragent_means = []
-
-    # convert data to structure like:
-    # [["useragent1", "averagenodes1"], ["useragent2", "averagenodes2"], ...]
+    # convert data to structure like: [["useragent1", averagenodes1], ...]
+    # also calculate the sum of average node counts
     for series in dcrfarm_data["results"][0]["series"]:
         ua = series["tags"]["useragent_tag"]
-        mean = statistics.mean(map(operator.itemgetter(1), series["values"]))
-        useragent_means.append([ua, mean])
-
-    tracked_ua_means = []
-    mean_sum = 0
-
-    # filter out only useragents that contain strings from `tracked_versions`
-    # also calculate the sum of all nodes into mean_sum
-    for ua_mean in useragent_means:
-        ua, mean = ua_mean
-        for version in tracked_versions:
-            if str(version) in str(ua):
-                tracked_ua_means.append(ua_mean)
-                break
+        mean = statistics.mean(map(get_count, series["values"]))
+        ua_stats.append([ua, mean])
         mean_sum += mean
 
-    # sort descending
-    stats = sorted(tracked_ua_means, key=operator.itemgetter(1), reverse=True)
+    # calculate ratios and add them as a new column
+    # [["useragent1", averagenodes1, avgratio1], ...]
+    for us in ua_stats:
+        ua, mean = us
+        ratio = mean / mean_sum
+        us.append(ratio)
 
-    # calculate percentages among total nodes and add them as a new column
-    # [["useragent1", "averagenodes1", "average1%"], ...]
-    for ua_mean in stats:
-        ua, mean = ua_mean
-        percentage = mean / (mean_sum / 100)
-        ua_mean.append(percentage)
+    # lookup dict to find a group name by user agent
+    ua_to_group = inverse_multidict(TRACKED_UA_GROUPS)
+    # temporary dict that maps group name to [["ua", averagenodes1, avgratio1], ...]
+    grouped_stats = {}
 
-    return stats
+    for uas in ua_stats:
+        ua = uas[0]
+        gname = ua_to_group.get(ua)
+        if gname:
+            # this ua belongs to a group we're interested in, so add it to the
+            # list of stats for this group, creating new mapping if necessary
+            gs = grouped_stats.setdefault(gname, [])
+            gs.append(uas)
 
-def print_node_stats(stats, start_date):
+    group_stats = []
+
+    for gname, gstats in grouped_stats.items():
+        gavgnodes = sum(map(get_count, gstats))
+        gavgratio = gavgnodes / mean_sum
+        group_stats.append(GroupStats(gname, gavgnodes, gavgratio, gstats))
+
+    get_ratio = operator.itemgetter(2)
+    group_stats_sorted = sorted(group_stats, key=get_ratio, reverse=True)
+    return group_stats_sorted
+
+def print_node_stats(group_stats, start_date):
     output = "Average version distribution for " + start_date.strftime("%B") + ": "
     dcrd_str = ""
     dcrwallet_str = ""
-    tracked_percentage = 0
+    tracked_ratio = 0
 
     # process and collect useragents strings
-    for uastr, avg, avgpc in stats:
-        tracked_percentage += avgpc
+    for gs in group_stats:
+        gratio = gs.avg_nodes_ratio
+        tracked_ratio += gratio
+        gname = gs.name
+        if "dcrd" in gname:
+            dcrd_str += str(round(gratio * 100, 2)) + "% " + gname + ", "
 
-        if "dcrd" in str(uastr):
-            ua = parse_user_agent(uastr)
-            dcrd_str += str(round(avgpc, 2)) + "% " + ua.name + " v" + ua.version + ", "
-
-        if "dcrwallet" in str(uastr):
-            ua = parse_user_agent(uastr)
-            dcrwallet_str += str(round(avgpc, 2)) + "% " + ua.name + " v" + ua.version + ", "
+        if "dcrwallet" in gname:
+            dcrwallet_str += str(round(gratio * 100, 2)) + "% " + gname + ", "
 
     # build and print the final string
-    output += dcrd_str + dcrwallet_str + str(round(100-tracked_percentage,2)) + "% Others."
+    output += dcrd_str + dcrwallet_str + str(round((1 - tracked_ratio) * 100, 2)) + "% others."
     print(output)
 
 def main():
