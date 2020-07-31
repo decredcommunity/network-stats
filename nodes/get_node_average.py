@@ -125,6 +125,9 @@ def calc_node_version_stats(dcrfarm_data):
                   untracked_ratio = (1 - tracked_ratio))
     return stats
 
+def fmt_percent(f):
+    return str(round(f * 100, 2)) + "%"
+
 def print_node_stats(stats, start_date):
     output = "Average version distribution for " + start_date.strftime("%B") + ": "
     dcrd_str = ""
@@ -135,13 +138,13 @@ def print_node_stats(stats, start_date):
         gratio = gs.avg_nodes_ratio
         gname = gs.name
         if "dcrd" in gname:
-            dcrd_str += str(round(gratio * 100, 2)) + "% " + gname + ", "
+            dcrd_str += fmt_percent(gratio) + " " + gname + ", "
 
         if "dcrwallet" in gname:
-            dcrwallet_str += str(round(gratio * 100, 2)) + "% " + gname + ", "
+            dcrwallet_str += fmt_percent(gratio) + " " + gname + ", "
 
     # build and print the final string
-    output += dcrd_str + dcrwallet_str + str(round((stats.untracked_ratio) * 100, 2)) + "% others."
+    output += dcrd_str + dcrwallet_str + fmt_percent(stats.untracked_ratio) + " others."
     print(output)
 
 def main():
