@@ -125,8 +125,44 @@ def calc_node_version_stats(dcrfarm_data):
                   untracked_ratio = (1 - tracked_ratio))
     return stats
 
+def concise_round(f):
+    """Round a floating point number for a concise presentation.
+
+    The rounding removes decimal places one by one while the result is less
+    than 10% away from the original.
+
+    The intent is to reduce the visual noise of too many decimal places, but
+    keep enough while they make significance.
+
+    NOTE: This is using Python's standard `round` function, which uses "round
+    half to even", e.g. 10.5 becomes 10 and not 11.
+    """
+    sensitivity = 0.1 # 10%
+    maxdigits = 2 # start with rounding to 2 decimal digits
+
+    res = f
+    digits = maxdigits
+
+    while digits >= 0:
+        cand = round(f, digits)
+        # rounded number can be lower or greater than original
+        change = abs(1 - cand / f)
+        if change > sensitivity:
+            return res
+        res = cand
+        digits -= 1
+
+    # cannot round further after all decimal digits are removed
+
+    intres = int(res)
+    if intres == res:
+        # int is convenient as its str() is more concise ("10" vs "10.0")
+        return intres
+    else:
+        raise Exception("fully rounded float not equal to int, too bad!")
+
 def fmt_percent(f):
-    return str(round(f * 100, 2)) + "%"
+    return str(concise_round(f * 100)) + "%"
 
 def print_node_stats(stats, start_date):
     output = "Average version distribution for " + start_date.strftime("%B") + ": "
