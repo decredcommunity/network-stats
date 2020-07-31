@@ -14,6 +14,11 @@ GroupStats = namedtuple("GroupStats", [
     "stats"
 ])
 
+Stats = namedtuple("Stats", [
+    "group_stats",
+    "untracked_ratio"
+])
+
 TRACKED_UA_GROUPS = {
     "dcrd v1.5.1":          ["/dcrwire:0.4.0/dcrd:1.5.1/"],
     "dcrd v1.5":            ["/dcrwire:0.4.0/dcrd:1.5.0/"],
@@ -105,26 +110,29 @@ def calc_node_version_stats(dcrfarm_data):
             gs.append(uas)
 
     group_stats = []
+    tracked_ratio = 0
 
     for gname, gstats in grouped_stats.items():
         gavgnodes = sum(map(get_count, gstats))
         gavgratio = gavgnodes / mean_sum
+        tracked_ratio += gavgratio
         group_stats.append(GroupStats(gname, gavgnodes, gavgratio, gstats))
 
     get_ratio = operator.itemgetter(2)
     group_stats_sorted = sorted(group_stats, key=get_ratio, reverse=True)
-    return group_stats_sorted
 
-def print_node_stats(group_stats, start_date):
+    stats = Stats(group_stats = group_stats_sorted,
+                  untracked_ratio = (1 - tracked_ratio))
+    return stats
+
+def print_node_stats(stats, start_date):
     output = "Average version distribution for " + start_date.strftime("%B") + ": "
     dcrd_str = ""
     dcrwallet_str = ""
-    tracked_ratio = 0
 
     # process and collect useragents strings
-    for gs in group_stats:
+    for gs in stats.group_stats:
         gratio = gs.avg_nodes_ratio
-        tracked_ratio += gratio
         gname = gs.name
         if "dcrd" in gname:
             dcrd_str += str(round(gratio * 100, 2)) + "% " + gname + ", "
@@ -133,7 +141,7 @@ def print_node_stats(group_stats, start_date):
             dcrwallet_str += str(round(gratio * 100, 2)) + "% " + gname + ", "
 
     # build and print the final string
-    output += dcrd_str + dcrwallet_str + str(round((1 - tracked_ratio) * 100, 2)) + "% others."
+    output += dcrd_str + dcrwallet_str + str(round((stats.untracked_ratio) * 100, 2)) + "% others."
     print(output)
 
 def main():
