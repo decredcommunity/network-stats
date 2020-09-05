@@ -183,22 +183,47 @@ def print_node_stats(stats, start_date):
     output += dcrd_str + dcrwallet_str + fmt_percent(stats.untracked_ratio) + " others."
     print(output)
 
+def load_json(filename):
+    with open(filename) as f:
+        return json.load(f)
+
+def save_json(obj, filename):
+    try:
+        with open(filename, "x") as f:
+            json.dump(obj, f, sort_keys=True, indent=2)
+            f.write("\n")
+        print("saved: " + filename)
+    except FileExistsError as e:
+        print("failed to save: file exists: " + filename)
+
+def make_arg_parser():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Decred node stats tool")
+
+    parser.add_argument("-i", "--in-file",
+                        help="do not make request, read input from file")
+    parser.add_argument("-s", "--save-response", dest="resp_file",
+                        help="save response JSON to file")
+
+    return parser
+
 def main():
+    parser = make_arg_parser()
+    args = parser.parse_args()
+
     # change these dates for your time period
     start_date = datetime.datetime(2020, 5,  1,  0,  0,  0,  0, tzinfo=datetime.timezone.utc)
     end_date   = datetime.datetime(2020, 5, 31, 23, 59, 59,  0, tzinfo=datetime.timezone.utc)
 
-    filename = sys.argv[1] if len(sys.argv) > 1 else None
-    if filename:
-        print("reading from file")
-        with open(filename) as f:
-            dcrfarm_data = json.load(f)
+    if args.in_file:
+        dcrfarm_data = load_json(args.in_file)
     else:
         # get the data as from the API endpoint
         dcrfarm_data = get_dcrfarm_data(start_date, end_date)
 
-    # uncomment to print raw JSON
-    #print(json.dumps(dcrfarm_data))
+    if args.resp_file:
+        save_json(dcrfarm_data, args.resp_file)
 
     stats = calc_node_version_stats(dcrfarm_data)
     # print the stats in desired format.
