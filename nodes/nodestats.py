@@ -183,14 +183,24 @@ def print_node_stats(stats, start_date):
     output += dcrd_str + dcrwallet_str + fmt_percent(stats.untracked_ratio) + " others."
     print(output)
 
-def month_range(month_str):
-    # accept month as YYYYMM string, e.g. 202008
-    # produce aware UTC datetimes as required by datetime_to_unix_millis
-    start = datetime.datetime.strptime(month_str, "%Y%m").replace(tzinfo=datetime.timezone.utc)
-    if start.month < 12:
-        end = start.replace(month = start.month + 1)
+def inc_month(dt):
+    if dt.month < 12:
+        return dt.replace(month = dt.month + 1)
     else:
-        end = start.replace(year = start.year + 1, month = 1)
+        return dt.replace(year = dt.year + 1, month = 1)
+
+def dec_month(dt):
+    if dt.month > 1:
+        return dt.replace(month = dt.month - 1)
+    else:
+        return dt.replace(year = dt.year - 1, month = 12)
+
+def month_range(dt):
+    # make two datetimes that are start and end of dt's month
+    # the end datetime is start of the next month
+    # produce aware UTC datetimes as required by datetime_to_unix_millis
+    start = datetime.datetime(dt.year, dt.month, 1, tzinfo = datetime.timezone.utc)
+    end = inc_month(start)
     return (start, end)
 
 def load_json(filename):
@@ -211,8 +221,9 @@ def make_arg_parser():
 
     parser = argparse.ArgumentParser(description="Decred node stats tool")
 
-    parser.add_argument("month",
-                        help="month to get and compute stats for, as YYYYMM")
+    parser.add_argument("-m", "--month",
+                        help="month to report (previous month by default), "
+                             "formatted as YYYYMM, e.g. 202008")
     parser.add_argument("-i", "--in-file",
                         help="do not make request, read input from file")
     parser.add_argument("-s", "--save-response", dest="resp_file",
@@ -224,7 +235,13 @@ def main():
     parser = make_arg_parser()
     args = parser.parse_args()
 
-    start_date, end_date = month_range(args.month)
+    if args.month:
+        mdate = datetime.datetime.strptime(args.month, "%Y%m").replace(tzinfo=datetime.timezone.utc)
+    else:
+        now = datetime.datetime.now(datetime.timezone.utc)
+        mdate = dec_month(now)
+
+    start_date, end_date = month_range(mdate)
 
     if args.in_file:
         dcrfarm_data = load_json(args.in_file)
