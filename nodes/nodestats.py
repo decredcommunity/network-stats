@@ -1,11 +1,11 @@
 import requests
 import json
 import time
-import datetime
 import operator
 import statistics
 import sys
 from collections import namedtuple
+from datetime import datetime, timezone
 
 GroupStats = namedtuple("GroupStats", [
     "name",
@@ -49,9 +49,9 @@ def inverse_multidict(md):
 
 def datetime_to_unix_millis(dt):
     # require an aware UTC date so that there is no room for error when calling
-    # datetime.datetime.timestamp(), which might return an incorrect Unix
+    # datetime.timestamp(), which might return an incorrect Unix
     # timestamp if the system timezone is not UTC
-    assert dt.tzinfo == datetime.timezone.utc
+    assert dt.tzinfo == timezone.utc
 
     return int(dt.timestamp()) * 1000
 
@@ -199,7 +199,7 @@ def month_range(dt):
     # make two datetimes that are start and end of dt's month
     # the end datetime is start of the next month
     # produce aware UTC datetimes as required by datetime_to_unix_millis
-    start = datetime.datetime(dt.year, dt.month, 1, tzinfo = datetime.timezone.utc)
+    start = datetime(dt.year, dt.month, 1, tzinfo = timezone.utc)
     end = inc_month(start)
     return (start, end)
 
@@ -236,9 +236,9 @@ def main():
     args = parser.parse_args()
 
     if args.month:
-        mdate = datetime.datetime.strptime(args.month, "%Y%m").replace(tzinfo=datetime.timezone.utc)
+        mdate = datetime.strptime(args.month, "%Y%m").replace(tzinfo=timezone.utc)
     else:
-        now = datetime.datetime.now(datetime.timezone.utc)
+        now = datetime.now(timezone.utc)
         mdate = dec_month(now)
 
     start_date, end_date = month_range(mdate)
