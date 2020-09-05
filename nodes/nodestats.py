@@ -240,6 +240,7 @@ def main():
     else:
         now = datetime.now(timezone.utc)
         mdate = dec_month(now)
+        print("assuming month: " + mdate.strftime("%B %Y") + " (use -m to change)")
 
     start_date, end_date = month_range(mdate)
 
