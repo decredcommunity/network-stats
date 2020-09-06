@@ -22,7 +22,7 @@ Stats = namedtuple("Stats", [
 TRACKED_UA_GROUPS = {
     "dcrd v1.5.2":          ["/dcrwire:0.4.0/dcrd:1.5.2/"],
     "dcrd v1.5.1":          ["/dcrwire:0.4.0/dcrd:1.5.1/"],
-    "dcrd v1.5":            ["/dcrwire:0.4.0/dcrd:1.5.0/"],
+    "dcrd v1.5.0":          ["/dcrwire:0.4.0/dcrd:1.5.0/"],
     "dcrd v1.6 dev builds": ["/dcrwire:0.4.0/dcrd:1.6.0(pre)/"],
     "dcrd v1.5 dev and RC builds": [
         "/dcrwire:0.3.0/dcrd:1.5.0(pre)/",
