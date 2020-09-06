@@ -35,6 +35,8 @@ TRACKED_UA_GROUPS = {
     "dcrwallet v1.4":       ["/dcrwire:0.3.0/dcrwallet:1.4.0+release/"],
 }
 
+KNOWN_UAS_FILE = "user-agents.list"
+
 def inverse_multidict(md):
     # compute an inverse multidict
     # multidict is a dict that maps keys to lists of elements
@@ -184,6 +186,41 @@ def print_node_stats(stats, start_date):
     output += dcrd_str + dcrwallet_str + fmt_percent(stats.untracked_ratio) + " others."
     print(output)
 
+def load_list(path):
+    with open(path) as f:
+        return [line.rstrip("\n") for line in f]
+
+def save_list(iterable, path):
+    with open(path, "w", newline = "\n") as f:
+        for item in iterable:
+            f.write(str(item))
+            f.write("\n")
+    print("saved: " + path)
+
+def update_user_agents(dcrfarm_data):
+    """Add any new user agents to the known list."""
+    import os
+
+    known_uas = set()
+    if os.path.isfile(KNOWN_UAS_FILE):
+        known_uas = set(load_list(KNOWN_UAS_FILE))
+        print("loaded {} user agents from {}".format(len(known_uas), KNOWN_UAS_FILE))
+
+    uas = set()
+    for series in dcrfarm_data["results"][0]["series"]:
+        ua = series["tags"]["useragent_tag"]
+        uas.add(ua)
+
+    new_uas = uas.difference(known_uas)
+    if new_uas:
+        print("found {} new user agents not seen before:".format(len(new_uas)))
+        for ua in sorted(new_uas):
+            print(ua)
+        new_known_uas = known_uas.union(new_uas)
+        save_list(sorted(new_known_uas), KNOWN_UAS_FILE)
+    else:
+        print("no new user agents found")
+
 def inc_month(dt):
     if dt.month < 12:
         return dt.replace(month = dt.month + 1)
@@ -230,6 +267,10 @@ def make_arg_parser():
     parser.add_argument("-s", "--save-response",
                         dest = "resp_file",
                         help = "save response JSON to file")
+    parser.add_argument("-u", "--update-uas",
+                        action = "store_true",
+                        help = "update {} with new user agents instead of "
+                               "printing main stats".format(KNOWN_UAS_FILE))
 
     return parser
 
@@ -255,9 +296,12 @@ def main():
     if args.resp_file:
         save_json(dcrfarm_data, args.resp_file)
 
-    stats = calc_node_version_stats(dcrfarm_data)
-    # print the stats in desired format.
-    print_node_stats(stats, start_date)
+    if args.update_uas:
+        update_user_agents(dcrfarm_data)
+    else:
+        stats = calc_node_version_stats(dcrfarm_data)
+        # print the stats in desired format.
+        print_node_stats(stats, start_date)
 
 if __name__ == "__main__":
     try:
