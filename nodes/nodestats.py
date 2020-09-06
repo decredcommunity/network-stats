@@ -66,14 +66,15 @@ def get_dcrfarm_data(start_date, end_date):
            'SELECT count(distinct("addr")) FROM "peers"'
            ' WHERE time >= {start_ms}ms and time < {end_ms}ms'
            ' GROUP BY time(1d), "useragent_tag" fill(none)'
-          ).format(start_ms=start_unix_ms, end_ms=end_unix_ms)
+          ).format(start_ms = start_unix_ms, end_ms = end_unix_ms)
 
     print("fetching " + url)
     resp = requests.get(url)
     if resp.status_code == 200:
         return json.loads(resp.text)
     else:
-        raise Exception("unexpected response from charts.dcr.farm: HTTP status is " + str(resp.status_code))
+        raise Exception("unexpected response from charts.dcr.farm: "
+                        "HTTP status is " + str(resp.status_code))
 
 def calc_node_version_stats(dcrfarm_data):
     ua_stats = []
@@ -119,7 +120,7 @@ def calc_node_version_stats(dcrfarm_data):
         group_stats.append(GroupStats(gname, gavgnodes, gavgratio, gstats))
 
     get_ratio = operator.itemgetter(2)
-    group_stats_sorted = sorted(group_stats, key=get_ratio, reverse=True)
+    group_stats_sorted = sorted(group_stats, key = get_ratio, reverse = True)
 
     stats = Stats(group_stats = group_stats_sorted,
                   untracked_ratio = (1 - tracked_ratio))
@@ -210,7 +211,7 @@ def load_json(filename):
 def save_json(obj, filename):
     try:
         with open(filename, "x") as f:
-            json.dump(obj, f, sort_keys=True, indent=2)
+            json.dump(obj, f, sort_keys = True, indent = 2)
             f.write("\n")
         print("saved: " + filename)
     except FileExistsError as e:
@@ -219,15 +220,16 @@ def save_json(obj, filename):
 def make_arg_parser():
     import argparse
 
-    parser = argparse.ArgumentParser(description="Decred node stats tool")
+    parser = argparse.ArgumentParser(description = "Decred node stats tool")
 
     parser.add_argument("-m", "--month",
-                        help="month to report (previous month by default), "
-                             "formatted as YYYYMM, e.g. 202008")
+                        help = "month to report (previous month by default), "
+                               "formatted as YYYYMM, e.g. 202008")
     parser.add_argument("-i", "--in-file",
-                        help="do not make request, read input from file")
-    parser.add_argument("-s", "--save-response", dest="resp_file",
-                        help="save response JSON to file")
+                        help = "do not make request, read input from file")
+    parser.add_argument("-s", "--save-response",
+                        dest = "resp_file",
+                        help = "save response JSON to file")
 
     return parser
 
@@ -236,7 +238,7 @@ def main():
     args = parser.parse_args()
 
     if args.month:
-        mdate = datetime.strptime(args.month, "%Y%m").replace(tzinfo=timezone.utc)
+        mdate = datetime.strptime(args.month, "%Y%m").replace(tzinfo = timezone.utc)
     else:
         now = datetime.now(timezone.utc)
         mdate = dec_month(now)
