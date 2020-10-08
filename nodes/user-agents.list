@@ -44,3 +44,4 @@
 /dcrwire:0.4.0/dcrwallet:1.5.1+release/
 /dcrwire:0.4.0/dcrwallet:1.5.2-pre/
 /decred-seeder:0.01/
+/hdfwire:0.4.0/hdfd:1.5.2/
