@@ -2,6 +2,7 @@ import requests
 import json
 import time
 import operator
+import os
 import statistics
 import sys
 from collections import namedtuple
@@ -19,23 +20,7 @@ Stats = namedtuple("Stats", [
     "untracked_ratio"
 ])
 
-TRACKED_UA_GROUPS = {
-    "dcrd v1.5.2":          ["/dcrwire:0.4.0/dcrd:1.5.2/"],
-    "dcrd v1.5.1":          ["/dcrwire:0.4.0/dcrd:1.5.1/"],
-    "dcrd v1.5.0":          ["/dcrwire:0.4.0/dcrd:1.5.0/"],
-    "dcrd v1.6 dev builds": ["/dcrwire:0.4.0/dcrd:1.6.0(pre)/"],
-    "dcrd v1.5 dev and RC builds": [
-        "/dcrwire:0.3.0/dcrd:1.5.0(pre)/",
-        "/dcrwire:0.4.0/dcrd:1.5.0(pre)/",
-        "/dcrwire:0.4.0/dcrd:1.5.0(rc1)/",
-        "/dcrwire:0.4.0/dcrd:1.5.0(rc2)/",
-    ],
-    "dcrd v1.4":            ["/dcrwire:0.3.0/dcrd:1.4.0/"],
-    "dcrwallet v1.5.1":     ["/dcrwire:0.4.0/dcrwallet:1.5.1+release/"],
-    "dcrwallet v1.5":       ["/dcrwire:0.4.0/dcrwallet:1.5.0+release/"],
-    "dcrwallet v1.4":       ["/dcrwire:0.3.0/dcrwallet:1.4.0+release/"],
-}
-
+TRACKED_UAS_FILE = "user-agents-tracked.json"
 KNOWN_UAS_FILE = "user-agents.list"
 
 def inverse_multidict(md):
@@ -99,8 +84,15 @@ def calc_node_version_stats(dcrfarm_data):
         ratio = mean / mean_sum
         us.append(ratio)
 
+    if os.path.isfile(TRACKED_UAS_FILE):
+        tracked_ua_groups = load_json(TRACKED_UAS_FILE)
+        print("loaded {} UA groups from {}".format(
+            len(tracked_ua_groups), TRACKED_UAS_FILE))
+    else:
+        raise Exception("file not found: " + TRACKED_UAS_FILE)
+
     # lookup dict to find a group name by user agent
-    ua_to_group = inverse_multidict(TRACKED_UA_GROUPS)
+    ua_to_group = inverse_multidict(tracked_ua_groups)
     # temporary dict that maps group name to [["ua", averagenodes1, avgratio1], ...]
     grouped_stats = {}
 
@@ -200,8 +192,6 @@ def save_list(iterable, path):
 
 def update_user_agents(dcrfarm_data):
     """Add any new user agents to the known list."""
-    import os
-
     known_uas = set()
     if os.path.isfile(KNOWN_UAS_FILE):
         known_uas = set(load_list(KNOWN_UAS_FILE))
