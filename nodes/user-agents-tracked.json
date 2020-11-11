@@ -8,14 +8,19 @@
     "dcrd v1.5.0": [
         "/dcrwire:0.4.0/dcrd:1.5.0/"
     ],
+    "dcrd v1.7 dev builds": [
+        "/dcrwire:0.4.0/dcrd:1.7.0(pre)/"
+    ],
     "dcrd v1.6 dev builds": [
-        "/dcrwire:0.4.0/dcrd:1.6.0(pre)/"
+        "/dcrwire:0.4.0/dcrd:1.6.0(pre)/",
+        "/dcrwire:0.4.0/dcrd:1.6.0(rc1)/"
     ],
     "dcrd v1.5 dev and RC builds": [
         "/dcrwire:0.3.0/dcrd:1.5.0(pre)/",
         "/dcrwire:0.4.0/dcrd:1.5.0(pre)/",
         "/dcrwire:0.4.0/dcrd:1.5.0(rc1)/",
-        "/dcrwire:0.4.0/dcrd:1.5.0(rc2)/"
+        "/dcrwire:0.4.0/dcrd:1.5.0(rc2)/",
+        "/dcrwire:0.4.0/dcrd:1.5.0(rc3)/"
     ],
     "dcrd v1.4": [
         "/dcrwire:0.3.0/dcrd:1.4.0/"
