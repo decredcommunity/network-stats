@@ -6,7 +6,7 @@ import os
 import statistics
 import sys
 from collections import namedtuple
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 GroupStats = namedtuple("GroupStats", [
     "name",
@@ -20,6 +20,7 @@ Stats = namedtuple("Stats", [
     "untracked_ratio"
 ])
 
+DCRFARM_START_DATE = date(2017, 12, 1)
 TRACKED_UAS_FILE = "user-agents-tracked.json"
 KNOWN_UAS_FILE = "user-agents.list"
 
@@ -56,6 +57,7 @@ def get_dcrfarm_data(start_date, end_date):
            ' GROUP BY time(1d), "useragent_tag" fill(none)'
           ).format(start_ms = start_unix_ms, end_ms = end_unix_ms)
 
+    print("getting data from {} till {}".format(start_date, end_date))
     print("fetching " + url)
     resp = requests.get(url)
     if resp.status_code == 200:
@@ -230,13 +232,20 @@ def dec_month(dt):
     else:
         return dt.replace(year = dt.year - 1, month = 12)
 
-def month_range(dt):
+def month_interval(dt):
     # make two datetimes that are start and end of dt's month
     # the end datetime is start of the next month
     # produce aware UTC datetimes as required by datetime_to_unix_millis
     start = datetime(dt.year, dt.month, 1, tzinfo = timezone.utc)
     end = inc_month(start)
     return (start, end)
+
+def month_range(start, end):
+    """Generate a sequence of months. Args must be datetime.date."""
+    month = date(start.year, start.month, 1)
+    while month < end:
+        yield month
+        month = inc_month(month)
 
 def load_json(filename):
     with open(filename) as f:
@@ -250,6 +259,23 @@ def save_json(obj, filename):
         print("saved: " + filename)
     except FileExistsError as e:
         print("failed to save: file exists: " + filename)
+
+def find_free_filename(name, ext):
+    filename = name + ext
+    n = 1
+    while os.path.exists(filename):
+        filename = name + "." + n + ext
+    return filename
+
+def save_range(start, end):
+    for month in month_range(start, end):
+        mstart, mend = month_interval(month)
+        # get the data as from the API endpoint
+        dcrfarm_data = get_dcrfarm_data(mstart, mend)
+        monthstr = month.strftime("%Y%m")
+        filename = find_free_filename(monthstr, ".json")
+        save_json(dcrfarm_data, filename)
+        time.sleep(2)
 
 def make_arg_parser():
     import argparse
@@ -268,12 +294,20 @@ def make_arg_parser():
                         action = "store_true",
                         help = "update {} with new user agents instead of "
                                "printing main stats".format(KNOWN_UAS_FILE))
+    parser.add_argument("-a", "--save-all",
+                        action = "store_true",
+                        help = "save JSON file for each month between {} and today"
+                            .format(DCRFARM_START_DATE))
 
     return parser
 
 def main():
     parser = make_arg_parser()
     args = parser.parse_args()
+
+    if args.save_all:
+        save_range(DCRFARM_START_DATE, date.today())
+        return
 
     if args.month:
         mdate = datetime.strptime(args.month, "%Y%m").replace(tzinfo = timezone.utc)
@@ -282,7 +316,7 @@ def main():
         mdate = dec_month(now)
         print("assuming month: " + mdate.strftime("%B %Y") + " (use -m to change)")
 
-    start_date, end_date = month_range(mdate)
+    start_date, end_date = month_interval(mdate)
 
     if args.in_file:
         dcrfarm_data = load_json(args.in_file)
