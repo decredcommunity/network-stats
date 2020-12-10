@@ -66,23 +66,25 @@ def get_dcrfarm_data(start_date, end_date):
 
 def calc_node_version_stats(dcrfarm_data):
     ua_stats = []
-    mean_sum = 0
+    daily_mean_sum = 0
     get_count = operator.itemgetter(1)
 
-    # convert data to structure like: [["useragent1", averagenodes1], ...]
+    # convert data to structure like: [["useragent1", dailymean1], ...]
     # also calculate the sum of average node counts
     for series in dcrfarm_data["results"][0]["series"]:
         ua = series["tags"]["useragent_tag"]
-        mean = statistics.mean(map(get_count, series["values"]))
-        ua_stats.append([ua, mean])
-        mean_sum += mean
+        # get daily counts of distinct addrs for each UA
+        daily_counts = list(map(get_count, series["values"]))
+        daily_mean = statistics.mean(daily_counts)
+        daily_mean_sum += daily_mean
+        ua_stats.append([ua, daily_mean])
 
     # calculate ratios and add them as a new column
-    # [["useragent1", averagenodes1, avgratio1], ...]
+    # [["useragent1", dailymean1, dailymeanratio1], ...]
     for us in ua_stats:
-        ua, mean = us
-        ratio = mean / mean_sum
-        us.append(ratio)
+        ua, daily_mean = us
+        daily_ratio = daily_mean / daily_mean_sum # the ratio is unused yet
+        us.append(daily_ratio)
 
     if os.path.isfile(TRACKED_UAS_FILE):
         tracked_ua_groups = load_json(TRACKED_UAS_FILE)
@@ -90,10 +92,10 @@ def calc_node_version_stats(dcrfarm_data):
             len(tracked_ua_groups), TRACKED_UAS_FILE))
     else:
         raise Exception("file not found: " + TRACKED_UAS_FILE)
-
     # lookup dict to find a group name by user agent
     ua_to_group = inverse_multidict(tracked_ua_groups)
-    # temporary dict that maps group name to [["ua", averagenodes1, avgratio1], ...]
+
+    # temporary dict that maps group name to [["ua", dailymean1, dailymeanratio1], ...]
     grouped_stats = {}
 
     for uas in ua_stats:
@@ -108,11 +110,15 @@ def calc_node_version_stats(dcrfarm_data):
     group_stats = []
     tracked_ratio = 0
 
+    get_mean = operator.itemgetter(1)
+
     for gname, gstats in grouped_stats.items():
-        gavgnodes = sum(map(get_count, gstats))
-        gavgratio = gavgnodes / mean_sum
-        tracked_ratio += gavgratio
-        group_stats.append(GroupStats(gname, gavgnodes, gavgratio, gstats))
+        # get daily means of the group
+        gdaily_means = list(map(get_mean, gstats))
+        gdaily_mean_sum = sum(gdaily_means)
+        gdaily_ratio = gdaily_mean_sum / daily_mean_sum
+        tracked_ratio += gdaily_ratio
+        group_stats.append(GroupStats(gname, gdaily_mean_sum, gdaily_ratio, gstats))
 
     get_ratio = operator.itemgetter(2)
     group_stats_sorted = sorted(group_stats, key = get_ratio, reverse = True)
