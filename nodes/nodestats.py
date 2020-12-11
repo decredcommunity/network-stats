@@ -66,7 +66,7 @@ def get_dcrfarm_data(start_date, end_date):
         raise Exception("unexpected response from charts.dcr.farm: "
                         "HTTP status is " + str(resp.status_code))
 
-def calc_node_version_stats(dcrfarm_data):
+def calc_node_stats(dcrfarm_data):
     ua_stats = []
     daily_mean_sum = 0
     get_count = operator.itemgetter(1)
@@ -88,6 +88,9 @@ def calc_node_version_stats(dcrfarm_data):
         daily_ratio = daily_mean / daily_mean_sum # the ratio is unused yet
         us.append(daily_ratio)
 
+    return ua_stats, daily_mean_sum
+
+def calc_node_group_stats(ua_stats, daily_mean_sum):
     if os.path.isfile(TRACKED_UAS_FILE):
         tracked_ua_groups = load_json(TRACKED_UAS_FILE)
         print("loaded {} UA groups from {}".format(
@@ -167,6 +170,13 @@ def concise_round(f):
 
 def fmt_percent(f):
     return str(concise_round(f * 100)) + "%"
+
+def print_node_counts(ua_stats, daily_mean_sum):
+    print("{:44}|{:10}|{:11}".format("user agent", "daily mean", "daily ratio"))
+    print("{:-<44}|{:-<10}|{:-<11}".format("", "", ""))
+    for ua, daily_mean, daily_ratio in sorted(ua_stats, key=operator.itemgetter(1)):
+        print("{:43} |{:>9.1f} |{:>10.2%} ".format(ua, daily_mean, daily_ratio))
+    print("sum of daily means: {:.1f}".format(daily_mean_sum))
 
 def print_node_stats(stats, start_date):
     output = "Average version distribution for " + start_date.strftime("%B") + ": "
@@ -290,6 +300,9 @@ def make_arg_parser():
     parser.add_argument("-s", "--save-response",
                         dest = "resp_file",
                         help = "save response JSON to file")
+    parser.add_argument("-p", "--print-counts",
+                        action = "store_true",
+                        help = "print mean daily count for each UA")
     parser.add_argument("-u", "--update-uas",
                         action = "store_true",
                         help = "update {} with new user agents instead of "
@@ -330,7 +343,10 @@ def main():
     if args.update_uas:
         update_user_agents(dcrfarm_data)
     else:
-        stats = calc_node_version_stats(dcrfarm_data)
+        ua_stats, daily_mean_sum = calc_node_stats(dcrfarm_data)
+        if args.print_counts:
+            print_node_counts(ua_stats, daily_mean_sum)
+        stats = calc_node_group_stats(ua_stats, daily_mean_sum)
         # print the stats in desired format.
         print_node_stats(stats, start_date)
 
