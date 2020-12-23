@@ -274,7 +274,8 @@ def find_free_filename(name, ext):
     filename = name + ext
     n = 1
     while os.path.exists(filename):
-        filename = name + "." + n + ext
+        filename = name + "." + str(n) + ext
+        n += 1
     return filename
 
 def save_range(start, end):
