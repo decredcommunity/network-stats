@@ -36,6 +36,7 @@
 /dcrwire:0.4.0/dcrd:1.6.0(rc1)/
 /dcrwire:0.4.0/dcrd:1.6.0(rc2)/
 /dcrwire:0.4.0/dcrd:1.6.0(rc3)/
+/dcrwire:0.4.0/dcrd:1.6.0(rc4)/
 /dcrwire:0.4.0/dcrd:1.6.0/
 /dcrwire:0.4.0/dcrd:1.7.0(pre)/
 /dcrwire:0.4.0/dcrextdata:0.0.1/
@@ -51,6 +52,7 @@
 /dcrwire:0.4.0/dcrwallet:1.6.0-rc1+release/
 /dcrwire:0.4.0/dcrwallet:1.6.0-rc2+release/
 /dcrwire:0.4.0/dcrwallet:1.6.0-rc3+release/
+/dcrwire:0.4.0/dcrwallet:1.6.0-rc4+release/
 /decred-seeder:0.01/
 /hdfwire:0.4.0/hdfd:1.5.2/
 /hdfwire:0.4.0/hdfd:1.6.0(pre)/
