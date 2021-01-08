@@ -11,11 +11,12 @@
     "dcrd v1.7 dev builds": [
         "/dcrwire:0.4.0/dcrd:1.7.0(pre)/"
     ],
-    "dcrd v1.6 dev builds": [
+    "dcrd v1.6 dev and RC builds": [
         "/dcrwire:0.4.0/dcrd:1.6.0(pre)/",
         "/dcrwire:0.4.0/dcrd:1.6.0(rc1)/",
         "/dcrwire:0.4.0/dcrd:1.6.0(rc2)/",
         "/dcrwire:0.4.0/dcrd:1.6.0(rc3)/",
+        "/dcrwire:0.4.0/dcrd:1.6.0(rc4)/",
         "/dcrwire:0.4.0/dcrd:1.6.0/"
     ],
     "dcrd v1.5 dev and RC builds": [
@@ -31,7 +32,8 @@
     "dcrwallet v1.6 dev and RC builds": [
         "/dcrwire:0.4.0/dcrwallet:1.6.0-rc1+release/",
         "/dcrwire:0.4.0/dcrwallet:1.6.0-rc2+release/",
-        "/dcrwire:0.4.0/dcrwallet:1.6.0-rc3+release/"
+        "/dcrwire:0.4.0/dcrwallet:1.6.0-rc3+release/",
+        "/dcrwire:0.4.0/dcrwallet:1.6.0-rc4+release/"
     ],
     "dcrwallet v1.5.1": [
         "/dcrwire:0.4.0/dcrwallet:1.5.1+release/"
