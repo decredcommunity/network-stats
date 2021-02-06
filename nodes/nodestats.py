@@ -32,7 +32,8 @@ def inverse_multidict(md):
     for k, v in md.items():
         for e in v:
             if e in inverse:
-                raise Exception("duplicate elements in multidict values are not allowed")
+                raise ValueError("duplicate multidict values are not allowed: "
+                                 + str(e))
             inverse[e] = k
     return inverse
 
@@ -258,8 +259,12 @@ def month_range(start, end):
         month = inc_month(month)
 
 def load_json(filename):
-    with open(filename) as f:
-        return json.load(f)
+    try:
+        with open(filename) as f:
+            return json.load(f)
+    except Exception as e:
+        msg = e.args[0] if len(e.args) > 0 else ""
+        raise Exception(filename + ": " + msg) from e
 
 def save_json(obj, filename):
     try:
