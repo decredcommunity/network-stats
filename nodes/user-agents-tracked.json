@@ -1,6 +1,17 @@
 {
+    "dcrd v1.7 dev builds": [
+        "/dcrwire:0.4.0/dcrd:1.7.0(pre)/"
+    ],
     "dcrd v1.6.0": [
         "/dcrwire:0.4.0/dcrd:1.6.0/"
+    ],
+    "dcrd v1.6 dev and RC builds": [
+        "/dcrwire:0.4.0/dcrd:1.6.0(pre)/",
+        "/dcrwire:0.4.0/dcrd:1.6.0(rc1)/",
+        "/dcrwire:0.4.0/dcrd:1.6.0(rc2)/",
+        "/dcrwire:0.4.0/dcrd:1.6.0(rc3)/",
+        "/dcrwire:0.4.0/dcrd:1.6.0(rc4)/",
+        "/dcrwire:0.4.0/dcrd:1.6.0(rc5)/"
     ],
     "dcrd v1.5.2": [
         "/dcrwire:0.4.0/dcrd:1.5.2/"
@@ -10,17 +21,6 @@
     ],
     "dcrd v1.5.0": [
         "/dcrwire:0.4.0/dcrd:1.5.0/"
-    ],
-    "dcrd v1.7 dev builds": [
-        "/dcrwire:0.4.0/dcrd:1.7.0(pre)/"
-    ],
-    "dcrd v1.6 dev and RC builds": [
-        "/dcrwire:0.4.0/dcrd:1.6.0(pre)/",
-        "/dcrwire:0.4.0/dcrd:1.6.0(rc1)/",
-        "/dcrwire:0.4.0/dcrd:1.6.0(rc2)/",
-        "/dcrwire:0.4.0/dcrd:1.6.0(rc3)/",
-        "/dcrwire:0.4.0/dcrd:1.6.0(rc4)/",
-        "/dcrwire:0.4.0/dcrd:1.6.0(rc5)/"
     ],
     "dcrd v1.5 dev and RC builds": [
         "/dcrwire:0.3.0/dcrd:1.5.0(pre)/",
