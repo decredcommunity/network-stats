@@ -1,0 +1,9 @@
+{
+  "subrepos": [
+    {
+      "url": "https://github.com/decredcommunity/network-stats.git",
+      "branch": "dataraw/miningpoolstats",
+      "dir": "dataraw/miningpoolstats.stream"
+    }
+  ]
+}
