@@ -3,6 +3,9 @@
         "/dcrwire:0.4.0/dcrd:1.7.0(pre)/",
         "/dcrwire:1.0.0/dcrd:1.7.0(pre)/"
     ],
+    "dcrd v1.6.2": [
+        "/dcrwire:0.4.0/dcrd:1.6.2/"
+    ],
     "dcrd v1.6.1": [
         "/dcrwire:0.4.0/dcrd:1.6.1/"
     ],
